@@ -92,6 +92,8 @@ Todas possuem valor padrão para ambiente local:
 | `KAFKA_TOPIC_VOTING_RESULT` | `voting-result` | Tópico de resultado |
 | `SCHEDULER_SESSION_RESULT_DELAY_MS` | `30000` | Intervalo do scheduler (ms) |
 | `CPF_VALIDATION_URL` | `https://user-info.herokuapp.com` | URL da API externa de CPF |
+| `HIKARI_MAX_POOL_SIZE` | `10` | Tamanho máximo do pool de conexões |
+| `HIKARI_MIN_IDLE` | `5` | Conexões mínimas ociosas no pool |
 
 ---
 
@@ -111,8 +113,29 @@ Com a aplicação rodando, acesse:
 | Método | Endpoint | Descrição |
 |---|---|---|
 | `POST` | `/api/v1/pautas` | Cadastra uma nova pauta |
-| `GET` | `/api/v1/pautas` | Lista todas as pautas |
+| `GET` | `/api/v1/pautas?page=0&size=20` | Lista pautas (paginado, ordenado por data desc) |
 | `GET` | `/api/v1/pautas/{id}` | Busca pauta por ID |
+
+Parâmetros de paginação do `GET /pautas`:
+
+| Parâmetro | Padrão | Descrição |
+|---|---|---|
+| `page` | `0` | Número da página (0-based) |
+| `size` | `20` | Itens por página (1–100) |
+
+Resposta paginada:
+
+```json
+{
+  "content": [],
+  "page": 0,
+  "size": 20,
+  "totalElements": 42,
+  "totalPages": 3,
+  "hasNext": true,
+  "hasPrevious": false
+}
+```
 
 ### Sessões
 
@@ -194,6 +217,15 @@ As migrations estão em `src/main/resources/db/migration` e são aplicadas autom
 | `sessao` | Sessões de votação vinculadas a pautas |
 | `voto` | Votos registrados (unique por `pauta_id + cpf_associado`) |
 
+Migrations aplicadas:
+
+| Versão | Descrição |
+|---|---|
+| V1 | Criação da tabela `pauta` |
+| V2 | Criação da tabela `sessao` |
+| V3 | Criação da tabela `voto` + índice `idx_voto_pauta_id` |
+| V4 | Índices de performance: `pauta(criada_em)`, `sessao(unpublished)`, `voto(pauta_id, cpf)`, `voto(pauta_id, opcao)` |
+
 ---
 
 ## Tratamento de erros
@@ -219,3 +251,84 @@ Todos os erros seguem o padrão **RFC 9457 (Problem Details)**:
 | CPF inválido | `422` |
 | Associado não elegível | `403` |
 | Erro de validação de request | `400` |
+
+---
+
+## Testes unitários
+
+Testes de unidade puro (sem Spring context, sem banco) executados com JUnit 5 + Mockito.
+
+```bash
+./mvnw test -Dtest='CreatePautaUseCaseTest,GetPautaByIdUseCaseTest,GetAllPautasUseCaseTest,OpenSessionUseCaseTest,SessionTest,RegisterVoteUseCaseTest,GetVotingResultUseCaseTest,PublishClosedSessionResultsUseCaseTest,VotingResultTest,PageRequestTest'
+```
+
+| Classe de teste | Cenários |
+|---|---|
+| `CreatePautaUseCaseTest` | Delegação ao gateway |
+| `GetPautaByIdUseCaseTest` | Encontrada / não encontrada |
+| `GetAllPautasUseCaseTest` | Com resultados / página vazia |
+| `SessionTest` | `nova()` com null/zero/positivo, `isAberta()` aberta/encerrada |
+| `OpenSessionUseCaseTest` | Sucesso, pauta inexistente, sessão já aberta, duração padrão |
+| `RegisterVoteUseCaseTest` | Sucesso, pauta inexistente, sem sessão, sessão encerrada, CPF inelegível, voto duplicado (race condition) |
+| `VotingResultTest` | SIM vence, NAO vence, EMPATE, sem votos |
+| `GetVotingResultUseCaseTest` | SIM, EMPATE, sem votos, pauta inexistente |
+| `PublishClosedSessionResultsUseCaseTest` | Sem sessões, publica e marca, tolerância a falha por sessão, EMPATE |
+| `PageRequestTest` | Valores válidos, padrão, validações de page/size |
+
+---
+
+## Testes de carga (Bônus 3)
+
+Os scripts de performance ficam em `k6/` e requerem [k6](https://k6.io/docs/get-started/installation/) instalado.
+
+### Pré-requisito
+
+A aplicação deve estar em execução:
+
+```bash
+# com Docker Compose
+cd composer && docker compose up -d
+./mvnw spring-boot:run
+```
+
+### Scripts disponíveis
+
+| Script | Objetivo | Duração aprox. |
+|---|---|---|
+| `smoke-test.js` | Verifica que todos os endpoints respondem corretamente | ~30s |
+| `load-test.js` | Simula carga realista com 45 VUs (30 leitores + 15 votantes) | ~5min |
+| `stress-test.js` | Rampa até 200 VUs para encontrar o ponto de saturação | ~6min |
+
+### Execução
+
+```bash
+# Smoke — validação rápida antes de qualquer deploy
+k6 run k6/smoke-test.js
+
+# Load — carga realista (recomendado para CI)
+k6 run k6/load-test.js
+
+# Stress — encontra limite de capacidade
+k6 run k6/stress-test.js
+
+# Apontar para outro ambiente
+k6 run k6/load-test.js -e BASE_URL=http://producao:8080
+```
+
+### SLOs (Service Level Objectives)
+
+| Métrica | Load Test | Stress Test |
+|---|---|---|
+| p(95) latência geral | < 1 000 ms | < 3 000 ms |
+| p(99) latência geral | < 2 000 ms | — |
+| p(95) latência de voto | < 800 ms | — |
+| p(95) latência de resultado | < 500 ms | — |
+| Taxa de erro | < 1% | < 10% |
+
+### Estratégias de performance implementadas
+
+- **Paginação** em `GET /pautas` — evita varredura total da tabela
+- **Índices** (Flyway V4): `pauta(criada_em DESC)`, `sessao(resultado_publicado, fechamento)` (parcial), `voto(pauta_id, cpf_associado)`
+- **`@Transactional(readOnly=true)`** nos adapters de leitura — reduz overhead de flush do JPA
+- **HikariCP** configurado: pool de 5–10 conexões, timeouts adequados
+- **Race condition** de voto duplicado tratada via `UNIQUE CONSTRAINT` no banco + captura de `DataIntegrityViolationException` — sem lock pessimista
