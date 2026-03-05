@@ -1,5 +1,10 @@
 # Desafio Técnico Sicredi — Sistema de Votação
 
+=========================================== IMPORTANTE ==================================================================
+OBS: a API de validação de CPFs do heroku (https://user-info.herokuapp.com/users/{cpf}) nao estava mais disponivel, entao foi criada uma logica para tentar chamar a api e em caso de falha, validar apenas se é um cpf valido ou nao.
+=========================================================================================================================
+
+
 API REST para gerenciamento de sessões de votação em assembleias cooperativistas.
 
 ---
