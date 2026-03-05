@@ -29,8 +29,9 @@
 ## Bônus
 - [x] Bônus 1: validação CPF WebClient
 - [x] Bônus 2: Kafka resultado
-- [x] Bônus 3: Performance — índices, paginação e testes de carga
+- [x] Bônus 3: Performance — índices e paginação
+- [ ] Bônus 3: Testes de carga (k6 / Gatling)
 - [ ] Bônus 4: Versionamento da API — estratégia e implementação
 
 ## Qualidade
-- [ ] Testes unitários core
+- [x] Testes unitários core
