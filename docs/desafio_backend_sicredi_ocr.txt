@@ -1,0 +1,99 @@
+Desafio Técnico
+
+Objetivo
+
+No cooperativismo, cada associado possui um voto e as decisdes sao tomadas em assembleias, por votagao.
+A partir disso, vocé precisa criar uma solugao back-end para gerenciar essas sessées de votacao.
+
+Essa solucado deve ser executada na nuvem e promover as seguintes funcionalidades através de uma API
+REST:
+
+Cadastrar uma nova pauta;
+Abrir uma sessao de votagao em uma pauta (a sessao de votagao deve ficar aberta por um tempo
+determinado na chamada de abertura ou 1 minuto por default);
+
+e Receber votos dos associados em pautas (oS votos sao apenas 'Sim'/'Nao'. Cada associado é
+identificado por um id Unico e pode votar apenas uma vez por pauta);
+
+e Contabilizar os votos e dar o resultado da votagao na pauta.
+
+Para fins de exercicio, a seguran¢a das interfaces pode ser abstraida e qualquer chamada para as interfaces
+pode ser considerada como autorizada. A escolha da linguagem, frameworks e bibliotecas é livre (desde que
+nao infrinja direitos de uso).
+
+E importante que as pautas e os votos sejam persistidos e que nado sejam perdidos com o restart da aplicacdo.
+
+Tarefas bdnus
+
+As tarefas b6nus nao sao obrigatérias, mas nos permitem avaliar outros conhecimentos que vocé possa ter.
+A gente sempre sugere que o candidato pondere e apresente até onde consegue fazer, considerando o seu
+nivel de conhecimento e a qualidade da entrega.
+
+e Tarefa B6nus 1 - Integragdo com sistemas externos
+o  Integrar com um sistema que verifique, a partir do CPF do associado, se ele pode votar
+= GET hittps://user-info.herokuapp.com/users/{cpf}
+m Caso o CPF seja invalido, a API retornara o HTTP Status 404 (Not found). Vocé pode
+usar geradores de CPF para gerar CPFs validos;
+m Caso o CPF Sseja valido, a API retornara se o usuario pode (ABLE_TO_VOTE) ou nao
+pode (UNABLE_TO_VOTE) executar a operagao
+
+“status":"UNABLE TO VOTE"
+
+Exemplos de retorno do servico
+
+e Tarefa Bonus 2 - Mensageria e filas
+
+Classificacao da informacdao: Uso Interno
+\n-----PAGE BREAK-----\n
+o Oresultado da votagao precisa ser informado para o restante da plataforma, isso deve ser
+feito preferencialmente através de mensageria. Quando a sessdo de vota¢ao fechar, poste
+uma mensagem com o resultado da votac¢ao.
+
+Tarefa B6nus 3 - Performance
+o Imagine que sua aplicagdéo possa ser usada em cenarios que existam centenas de milhares
+de votos. Ela deve se comportar de maneira performatica nesses cenarios;
+o Testes de performance séo uma boa maneira de garantir e obServar como sua aplicagao se
+comporta.
+
+Tarefa Bonus 4 - Versionamento da API
+o Como vocé versionaria a API da sua aplicagao? Que estratégia usar?
+
+O que sera analisado
+
+Simplicidade no design da solucao (evitar over engineering)
+Organizagao do cédigo
+
+Arquitetura do projeto
+
+Boas praticas de programagao (manutenibilidade, legibilidade etc)
+Possiveis bugs
+
+Tratamento de erros e excegdes
+
+Explicagéo breve do porqué das escolhas tomadas durante 0 desenvolvimento da solugao
+Uso de testes automatizados e ferramentas de qualidade
+Limpeza do cédigo
+
+Documentagao do cddigo e da API
+
+Logs da aplicagdo
+
+Mensagens e organizagaéo dos commits
+
+Observacoes importantes
+
+Nao inicie o teste sem sanar todas as duvidas
+
+lremos executar a aplicagdo para testa-la, cuide com qualquer dependéncia externa e deixe claro
+caso haja instrugdes especiais para execugao do mesmo
+
+Teste bem sua solugao, evite bugs
+
+Desejamos uma boa prova e qualquer divida.
+
+Sicredi
+
+Cooperativa de Crédito
+
+Classificacao da informacdao: Uso Interno
+\n-----PAGE BREAK-----\n
