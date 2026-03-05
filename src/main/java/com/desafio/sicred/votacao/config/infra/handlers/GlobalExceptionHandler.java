@@ -3,8 +3,8 @@ package com.desafio.sicred.votacao.config.infra.handlers;
 import com.desafio.sicred.votacao.application.core.associado.exceptions.AssociadoNaoElegivelException;
 import com.desafio.sicred.votacao.application.core.associado.exceptions.CpfInvalidoException;
 import com.desafio.sicred.votacao.application.core.pauta.exceptions.PautaNotFoundException;
-import com.desafio.sicred.votacao.application.core.sessao.exceptions.SessaoEncerradaException;
-import com.desafio.sicred.votacao.application.core.sessao.exceptions.SessaoJaAbertaException;
+import com.desafio.sicred.votacao.application.core.sessao.exceptions.SessionEndedException;
+import com.desafio.sicred.votacao.application.core.sessao.exceptions.SessaoAlreadyOpenedException;
 import com.desafio.sicred.votacao.application.core.sessao.exceptions.SessaoNotFoundException;
 import com.desafio.sicred.votacao.application.core.voto.exceptions.VotoDuplicadoException;
 import lombok.extern.slf4j.Slf4j;
@@ -33,14 +33,14 @@ public class GlobalExceptionHandler {
         return problem(HttpStatus.NOT_FOUND, "sessao-nao-encontrada", "Sessão não encontrada", ex.getMessage());
     }
 
-    @ExceptionHandler(SessaoJaAbertaException.class)
-    public ProblemDetail handleSessaoJaAberta(SessaoJaAbertaException ex) {
+    @ExceptionHandler(SessaoAlreadyOpenedException.class)
+    public ProblemDetail handleSessaoJaAberta(SessaoAlreadyOpenedException ex) {
         log.warn("Sessão já aberta: {}", ex.getMessage());
         return problem(HttpStatus.CONFLICT, "sessao-ja-aberta", "Sessão já aberta", ex.getMessage());
     }
 
-    @ExceptionHandler(SessaoEncerradaException.class)
-    public ProblemDetail handleSessaoEncerrada(SessaoEncerradaException ex) {
+    @ExceptionHandler(SessionEndedException.class)
+    public ProblemDetail handleSessaoEncerrada(SessionEndedException ex) {
         log.warn("Sessão encerrada: {}", ex.getMessage());
         return problem(HttpStatus.UNPROCESSABLE_ENTITY, "sessao-encerrada", "Sessão encerrada", ex.getMessage());
     }

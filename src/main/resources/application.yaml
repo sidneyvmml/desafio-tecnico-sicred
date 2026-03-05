@@ -21,6 +21,18 @@ spring:
     enabled: true
     locations: classpath:db/migration
 
+  cloud:
+    openfeign:
+      client:
+        config:
+          cpf-validation:
+            connect-timeout: 3000
+            read-timeout: 5000
+            logger-level: basic
+
+cpf-validation:
+  url: ${CPF_VALIDATION_URL:https://user-info.herokuapp.com}
+
 springdoc:
   api-docs:
     path: /v3/api-docs

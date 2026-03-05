@@ -9,7 +9,7 @@ Essa solucado deve ser executada na nuvem e promover as seguintes funcionalidade
 REST:
 
 Cadastrar uma nova pauta;
-Abrir uma sessao de votagao em uma pauta (a sessao de votagao deve ficar aberta por um tempo
+Abrir uma session de votagao em uma pauta (a session de votagao deve ficar aberta por um tempo
 determinado na chamada de abertura ou 1 minuto por default);
 
 e Receber votos dos associados em pautas (oS votos sao apenas 'Sim'/'Nao'. Cada associado é

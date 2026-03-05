@@ -3,31 +3,31 @@
 ## Obrigatórios
 
 ### Pauta
-- [x] Migrations V2/V3 sessao/voto
+- [x] Migrations V2/V3 session/voto
 - [x] GetAllPautas - full impl
 - [x] GetPautaById - full impl
 
 ### Sessão
-- [ ] Sessão: domain + command
-- [ ] Sessão: ports input/output
-- [ ] Sessão: usecase + config bean
-- [ ] Sessão: entity + JPA repo
-- [ ] Sessão: output adapter
-- [ ] Sessão: input controller
+- [x] Sessão: domain + command
+- [x] Sessão: ports input/output
+- [x] Sessão: usecase + config bean
+- [x] Sessão: entity + JPA repo
+- [x] Sessão: output adapter
+- [x] Sessão: input controller
 
 ### Voto
-- [ ] Voto: domain + command
-- [ ] Voto: ports input/output
-- [ ] Voto: usecase + config bean
-- [ ] Voto: entity + JPA repo
-- [ ] Voto: output adapter
-- [ ] Voto: input controller
+- [x] Voto: domain + command
+- [x] Voto: ports input/output
+- [x] Voto: usecase + config bean
+- [x] Voto: entity + JPA repo
+- [x] Voto: output adapter
+- [x] Voto: input controller
 
 ### Resultado
-- [ ] Resultado: usecase + controller
+- [x] Resultado: usecase + controller
 
 ## Bônus
-- [ ] Bônus 1: validação CPF WebClient
+- [x] Bônus 1: validação CPF WebClient
 - [ ] Bônus 2: Kafka resultado
 
 ## Qualidade
