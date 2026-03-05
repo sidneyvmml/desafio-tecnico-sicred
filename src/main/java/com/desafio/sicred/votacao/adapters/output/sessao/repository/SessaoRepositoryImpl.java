@@ -3,6 +3,7 @@ package com.desafio.sicred.votacao.adapters.output.sessao.repository;
 import com.desafio.sicred.votacao.adapters.output.sessao.entities.SessaoEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,5 +34,16 @@ public class SessaoRepositoryImpl implements SessaoRepository {
     @Override
     public List<SessaoEntity> findByPautaId(UUID pautaId) {
         return jpaRepository.findByPautaId(pautaId);
+    }
+
+    @Override
+    public List<SessaoEntity> findClosedAndUnpublished() {
+        return jpaRepository.findClosedAndUnpublished(LocalDateTime.now());
+    }
+
+    @Override
+    @Transactional
+    public void markResultadoPublicado(UUID id) {
+        jpaRepository.markResultadoPublicado(id);
     }
 }

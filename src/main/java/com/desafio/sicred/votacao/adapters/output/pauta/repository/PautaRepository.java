@@ -1,8 +1,9 @@
 package com.desafio.sicred.votacao.adapters.output.pauta.repository;
 
 import com.desafio.sicred.votacao.adapters.output.pauta.entities.PautaEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,5 +12,5 @@ public interface PautaRepository {
 
     Optional<PautaEntity> getById(UUID id);
 
-    List<PautaEntity> list();
+    Page<PautaEntity> list(Pageable pageable);
 }

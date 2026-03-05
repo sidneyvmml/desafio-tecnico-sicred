@@ -2,9 +2,11 @@ package com.desafio.sicred.votacao.adapters.output.associado.adapters;
 
 import com.desafio.sicred.votacao.adapters.output.associado.feign.CpfStatusResponse;
 import com.desafio.sicred.votacao.adapters.output.associado.feign.CpfValidationFeignClient;
+import com.desafio.sicred.votacao.adapters.output.associado.validation.CpfValidator;
 import com.desafio.sicred.votacao.application.core.associado.exceptions.CpfInvalidoException;
 import com.desafio.sicred.votacao.application.core.associado.ports.output.CpfValidationOutputGateway;
 import feign.FeignException;
+import feign.RetryableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,18 +21,43 @@ public class CpfValidationAdapter implements CpfValidationOutputGateway {
     @Override
     public boolean isEligible(String cpf) {
         try {
-            log.info("Validando elegibilidade do CPF: {}", maskCpf(cpf));
+            log.info("Validando elegibilidade via API externa: {}", maskCpf(cpf));
             CpfStatusResponse response = feignClient.getUserStatus(cpf);
-            boolean eligible = response.isEligible();
-            log.info("CPF {} — status: {}", maskCpf(cpf), response.status());
-            return eligible;
+            log.info("CPF {} — status externo: {}", maskCpf(cpf), response.status());
+            return response.isEligible();
+
         } catch (FeignException.NotFound ex) {
-            log.warn("CPF não encontrado na base de validação: {}", maskCpf(cpf));
-            throw new CpfInvalidoException("CPF não encontrado: " + cpf);
+            if (isApiUnavailable(ex)) {
+                return fallbackToLocalValidation(cpf, ex);
+            }
+            log.warn("CPF não encontrado na base de validação externa: {}", maskCpf(cpf));
+            throw new CpfInvalidoException("CPF inválido ou não encontrado: " + cpf);
+
+        } catch (RetryableException ex) {
+            return fallbackToLocalValidation(cpf, ex);
+
         } catch (FeignException ex) {
-            log.error("Erro ao validar CPF {}: status={}", maskCpf(cpf), ex.status());
-            throw new CpfInvalidoException("Não foi possível validar o CPF. Tente novamente.");
+            return fallbackToLocalValidation(cpf, ex);
         }
+    }
+
+    private boolean isApiUnavailable(FeignException ex) {
+        String body = ex.contentUTF8();
+        return body == null || body.isBlank() || body.contains("<html") || body.contains("<!DOCTYPE");
+    }
+
+    private boolean fallbackToLocalValidation(String cpf, Exception cause) {
+        log.warn("API de validação de CPF indisponível ({}). Aplicando validação local para: {}",
+                cause.getMessage(), maskCpf(cpf));
+
+        if (!CpfValidator.isValid(cpf)) {
+            log.warn("CPF reprovado na validação local: {}", maskCpf(cpf));
+            throw new CpfInvalidoException("CPF inválido: " + cpf);
+        }
+
+        log.warn("API de CPF indisponível — CPF {} aprovado localmente (matematicamente válido). "
+                + "Elegibilidade não confirmada pela fonte externa.", maskCpf(cpf));
+        return true;
     }
 
     private String maskCpf(String cpf) {
@@ -38,3 +65,4 @@ public class CpfValidationAdapter implements CpfValidationOutputGateway {
         return cpf.substring(0, 3) + "***" + cpf.substring(cpf.length() - 2);
     }
 }
+

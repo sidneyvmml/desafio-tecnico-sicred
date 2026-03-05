@@ -2,9 +2,10 @@ package com.desafio.sicred.votacao.adapters.output.pauta.repository;
 
 import com.desafio.sicred.votacao.adapters.output.pauta.entities.PautaEntity;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,7 +26,7 @@ public class PautaRepositoryImpl implements PautaRepository {
     }
 
     @Override
-    public List<PautaEntity> list() {
-        return jpaRepository.findAll();
+    public Page<PautaEntity> list(Pageable pageable) {
+        return jpaRepository.findAll(pageable);
     }
 }
